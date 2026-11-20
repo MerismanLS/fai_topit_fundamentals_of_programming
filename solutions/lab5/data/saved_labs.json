@@ -1,0 +1,10 @@
+[
+  {
+    "id": "l001",
+    "name": "generators",
+    "description": "как работать с генераторами",
+    "max_res": 120,
+    "deadline": "2026-12-20T16:18:40.975556",
+    "tags": ["python", "generators", "good luck"]
+  }
+]

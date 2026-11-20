@@ -1,13 +1,14 @@
+import json
 from datetime import datetime
 from collections.abc import Iterable
 
 class Student:
-    def __init__(self, id: str, full_name: str, group: str):
+    def __init__(self, id: str, full_name: str, group: str, date_of_registration: datetime = datetime.now(), activity: bool = True):
         self.id = id
         self.full_name = full_name
         self.group = group
-        self.date_of_registration = datetime.today()
-        self.activity = True
+        self.date_of_registration = date_of_registration
+        self.activity = activity
         self.validation()
 
     def validation(self):
@@ -96,7 +97,6 @@ class Submission:
 
     def validation(self):
         check_attempt = self.attempt > 0
-        check_result = self.result > 0
         check_status = self.status in ['submitted', 'accepted', 'rejected']
 
         if not check_attempt:
@@ -116,6 +116,7 @@ class SubmissionStorage:
             student_id: str,
             lab_id: str,
             result: int,
+            attempt: int = 0,
             comment: str = "",
             status: str = "submitted",
             submitted: datetime | None = None,
@@ -155,6 +156,48 @@ class Course:
         self.students = StudentsStorage()
         self.labs = LabsStorage()
         self.submissions = SubmissionStorage(self.students, self.labs)
+
+    def read_saved_data(self):
+        with open("/data/saved_students.json", mode='r', encoding='utf-8') as json_file:
+            data = json.load(json_file)
+
+        for item in data:
+            student = Student(
+                id=str(item['id']),
+                full_name=item['full_name'],
+                group=item['group'],
+                date_of_registration=datetime.fromisoformat(item['date_of_registration']),
+                activity=bool(item['activity'])
+            )
+            self.students.add(student)
+
+        with open("/data/saved_labs.json", mode='r', encoding='utf-8') as json_file:
+            data = json.load(json_file)
+
+        for item in data:
+            lab = Lab(
+                id=item['id'],
+                name=item['name'],
+                description=item['description'],
+                max_res=item['max_res'],
+                deadline=datetime.fromisoformat(item['deadline']),
+                tags=item["tags"]
+            )
+            self.labs.add(lab)
+
+        with open("/data/saved_subs.json", mode='r', encoding='utf-8') as json_file:
+            data = json.load(json_file)
+
+        for item in data:
+            self.submissions.submit(
+                student_id=item['student_id'],
+                lab_id=item['lab_id'],
+                attempt=item['attempt'],
+                result=item['result'],
+                submitted=datetime.fromisoformat(item['submitted']),
+                comment=item['comment'],
+                status=item['status']
+            )
 
     def register_student(self, id: str, full_name: str, group: str) -> Student:
         student = Student(id=id, full_name=full_name, group=group)
