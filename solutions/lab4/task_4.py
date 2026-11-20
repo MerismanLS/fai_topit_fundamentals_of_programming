@@ -110,4 +110,4 @@ class Course:
         return len(self.students)
 
     def __iter__(self):
-        return iter(self.students_ids)
+        return iter(self.students)
